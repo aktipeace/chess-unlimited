@@ -28,6 +28,7 @@ export class StockfishEngine {
   private searching = false
   private pendingSearch: SearchRequest | null = null
   private stopping = false
+  private discardStoppedBestMove = false
   private destroyed = false
 
   constructor(options: StockfishEngineOptions) {
@@ -91,7 +92,13 @@ export class StockfishEngine {
       if (this.pendingSearch) {
         const next = this.pendingSearch
         this.pendingSearch = null
+        this.discardStoppedBestMove = false
         this.launch(next)
+        return
+      }
+
+      if (this.discardStoppedBestMove) {
+        this.discardStoppedBestMove = false
         return
       }
 
@@ -131,9 +138,12 @@ export class StockfishEngine {
 
   stop() {
     this.pendingSearch = null
-    if (this.ready && this.searching && !this.stopping) {
-      this.stopping = true
-      this.send('stop')
+    if (this.ready && this.searching) {
+      this.discardStoppedBestMove = true
+      if (!this.stopping) {
+        this.stopping = true
+        this.send('stop')
+      }
     }
   }
 
@@ -148,6 +158,7 @@ export class StockfishEngine {
       this.ready = false
       this.searching = false
       this.stopping = false
+      this.discardStoppedBestMove = false
     }
   }
 }

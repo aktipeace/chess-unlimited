@@ -8,8 +8,8 @@ export const DEFAULT_SETTINGS: Settings = {
   showLastMove: true,
   showCoordinates: true,
   animationMs: 200,
-  targetDepth: 20,
-  multiPv: 3,
+  targetDepth: 14,
+  multiPv: 1,
   showBestMoveArrow: true,
 }
 

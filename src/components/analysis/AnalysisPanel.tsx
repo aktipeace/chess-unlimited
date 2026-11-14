@@ -22,6 +22,9 @@ interface Props {
   selectedVariation: number
   onSelectVariation: (variation: number) => void
   guidance: { from: string; to: string; san: string; piece: string } | null
+  isMobile: boolean
+  effectiveDepth: number
+  effectiveMultiPv: number
 }
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
@@ -31,6 +34,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 export default function AnalysisPanel({
   settings, onSetting, ready, running, analysis, bestMove, error,
   autoAnalyze, onAutoAnalyze, onStart, onStop, selectedVariation, onSelectVariation, guidance,
+  isMobile, effectiveDepth, effectiveMultiPv,
 }: Props) {
   const primary = analysis.lines.find((line) => line.multipv === 1)
   const cp = primary?.scoreCp ?? null
@@ -49,7 +53,7 @@ export default function AnalysisPanel({
       <dl className="mt-3 divide-y divide-line">
         <Row label="Evaluasi">{cp !== null ? `${(cp / 100).toFixed(2)}` : mate !== null ? `#${mate}` : empty}</Row>
         <Row label="Langkah terbaik">{primary?.san[0] ?? bestMove ?? empty}</Row>
-        <Row label="Kedalaman">{analysis.depth ?? '—'} <span className="text-muted">/ {settings.targetDepth}</span></Row>
+        <Row label="Kedalaman">{analysis.depth ?? '—'} <span className="text-muted">/ {effectiveDepth}</span></Row>
       </dl>
 
       <div className="mt-3">
@@ -59,9 +63,9 @@ export default function AnalysisPanel({
       </div>
 
       <div className="mt-3">
-        <h3 className="text-xs font-semibold text-muted">MultiPV ({settings.multiPv} baris)</h3>
+        <h3 className="text-xs font-semibold text-muted">MultiPV ({effectiveMultiPv} baris{isMobile ? ' · mode HP' : ''})</h3>
         <ol className="mt-1 space-y-1">
-          {Array.from({ length: settings.multiPv }, (_, i) => {
+          {Array.from({ length: effectiveMultiPv }, (_, i) => {
             const line = analysis.lines.find((item) => item.multipv === i + 1)
             const score = line?.scoreCp !== null && line?.scoreCp !== undefined
               ? (line.scoreCp / 100).toFixed(2)
@@ -83,7 +87,7 @@ export default function AnalysisPanel({
 
       <div className="mt-4 space-y-3 border-t border-line pt-4">
         <label className="block text-sm">
-          <span className="flex justify-between"><span>Kedalaman target</span><span className="num text-muted">{settings.targetDepth}</span></span>
+          <span className="flex justify-between"><span>Kedalaman target</span><span className="num text-muted">{effectiveDepth}{isMobile && settings.targetDepth > effectiveDepth ? ` (batas HP)` : ''}</span></span>
           <input type="range" min={8} max={40} value={settings.targetDepth} onChange={(e) => onSetting('targetDepth', Number(e.target.value))} className="mt-1 w-full accent-accent" />
         </label>
         <label className="flex items-center justify-between text-sm">
@@ -92,6 +96,7 @@ export default function AnalysisPanel({
             {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}</option>)}
           </select>
         </label>
+        {isMobile && <p className="text-xs text-muted">Pengaturan desktop tetap tersimpan. Di HP, engine otomatis memakai depth maksimal 15 dan MultiPV 1.</p>}
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" checked={autoAnalyze} onChange={(e) => onAutoAnalyze(e.target.checked)} className="accent-accent" />
           Analisis otomatis setiap posisi berubah
@@ -101,7 +106,7 @@ export default function AnalysisPanel({
           <Button disabled={!running} onClick={onStop} icon={<Square size={16} />}>Berhenti</Button>
         </div>
         {error && <p role="alert" className="text-xs text-danger">{error}</p>}
-        <p className="text-xs text-muted">Stockfish 18 Lite · WASM · single-threaded · berjalan lokal di browser.</p>
+        <p className="text-xs text-muted">Stockfish 18 Lite · WASM · single-threaded · berjalan lokal di browser. {isMobile ? `Mode HP: depth maksimal ${effectiveDepth}, MultiPV 1 untuk mengurangi beban.` : ''}</p>
       </div>
     </Panel>
   )

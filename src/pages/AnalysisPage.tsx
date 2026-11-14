@@ -20,9 +20,9 @@ export default function AnalysisPage({ chess, settings, onSetting }: Props) {
     status.kind === 'checkmate' ? 'text-danger' : status.kind === 'check' ? 'text-danger' : 'text-fg'
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
-      <div className="space-y-4">
-        <div className="flex flex-wrap items-end justify-between gap-2">
+    <div className="mx-auto grid w-full max-w-[1440px] min-w-0 gap-4 sm:gap-6 xl:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="min-w-0 space-y-3 sm:space-y-4">
+        <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-end sm:gap-2">
           <div aria-live="polite">
             <div className={`text-lg font-semibold ${tone}`}>{status.label}</div>
             <div className="text-sm text-muted">{error ?? status.detail}</div>
@@ -37,7 +37,7 @@ export default function AnalysisPage({ chess, settings, onSetting }: Props) {
         <ChessBoardView chess={chess} settings={settings} suggestedMoveUci={engine.suggestedMoveUci} showBestMoveArrow={settings.showBestMoveArrow} />
       </div>
 
-      <div className="space-y-4">
+      <div className="min-w-0 space-y-4">
         <AnalysisPanel
           settings={settings}
           onSetting={onSetting}
@@ -53,6 +53,9 @@ export default function AnalysisPage({ chess, settings, onSetting }: Props) {
           selectedVariation={engine.selectedVariation}
           onSelectVariation={engine.setSelectedVariation}
           guidance={engine.guidance}
+          isMobile={engine.isMobile}
+          effectiveDepth={engine.effectiveDepth}
+          effectiveMultiPv={engine.effectiveMultiPv}
         />
         <Panel title="Daftar langkah">
           <MoveList moves={chess.moves} />

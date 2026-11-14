@@ -16,7 +16,7 @@ export default function Sidebar({ page, onChange }: Props) {
   return (
     <nav
       aria-label="Navigasi utama"
-      className="fixed inset-x-0 bottom-0 z-10 flex border-t border-line bg-panel md:static md:w-56 md:shrink-0 md:flex-col md:border-r md:border-t-0"
+      className="mobile-nav fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-panel pb-[env(safe-area-inset-bottom)] md:static md:w-56 md:shrink-0 md:flex-col md:border-r md:border-t-0 md:pb-0"
     >
       <div className="hidden px-5 py-5 md:block">
         <div className="text-base font-bold tracking-tight">Chess Unlimited</div>

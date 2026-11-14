@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Chessboard } from 'react-chessboard'
 import { buildSquareStyles } from '../../lib/boardStyles'
 import type { Square } from 'chess.js'
@@ -15,6 +15,27 @@ interface Props {
 
 export default function ChessBoardView({ chess, settings, suggestedMoveUci, showBestMoveArrow = true }: Props) {
   const { game, fen, selected, targets, lastMove, checkSquare, orientation, pending, isGameOver } = chess
+  const boardShellRef = useRef<HTMLDivElement>(null)
+  const [boardWidth, setBoardWidth] = useState(() =>
+    typeof window === 'undefined' ? 320 : Math.max(240, Math.min(560, window.innerWidth - 24)),
+  )
+
+  useEffect(() => {
+    const element = boardShellRef.current
+    if (!element) return
+    const updateWidth = () => {
+      const width = Math.floor(element.getBoundingClientRect().width)
+      if (width > 0) setBoardWidth((current) => current === width ? current : width)
+    }
+    updateWidth()
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', updateWidth)
+      return () => window.removeEventListener('resize', updateWidth)
+    }
+    const observer = new ResizeObserver(updateWidth)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
 
   const squareStyles = useMemo(
     () =>
@@ -31,9 +52,10 @@ export default function ChessBoardView({ chess, settings, suggestedMoveUci, show
   )
 
   return (
-    <div className="relative mx-auto w-full" style={{ maxWidth: 'min(100%, calc(100dvh - 11rem))' }}>
+    <div ref={boardShellRef} className="chess-board-shell relative mx-auto w-full">
       <Chessboard
         id="main-board"
+        boardWidth={boardWidth}
         position={fen}
         customArrows={showBestMoveArrow && suggestedMoveUci && /^[a-h][1-8][a-h][1-8][qrbn]?$/.test(suggestedMoveUci)
           ? [[suggestedMoveUci.slice(0, 2) as Square, suggestedMoveUci.slice(2, 4) as Square]]
